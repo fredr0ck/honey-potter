@@ -1,0 +1,270 @@
+.events h1 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.tab-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.tab-content h2 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.events-table {
+  overflow-x: auto;
+}
+
+.events-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.events-table th,
+.events-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.events-table th {
+  background: #f9f9f9;
+  font-weight: 600;
+  color: #333;
+}
+
+.level-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.level-badge.level-1 {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.level-badge.level-2 {
+  background: #fff3e0;
+  color: #f57c00;
+}
+
+.level-badge.level-3 {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.incidents-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.incident-card {
+  background: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 4px solid #007bff;
+  transition: all 0.2s ease;
+}
+
+.incident-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.incident-card.selected {
+  border-left-color: #42b983;
+  background: #f0f9f4;
+  box-shadow: 0 4px 8px rgba(66, 185, 131, 0.3);
+}
+
+.incident-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.status {
+  padding: 4px 8px;
+  background: #e3f2fd;
+  color: #1976d2;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.incident-card p {
+  margin: 5px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.incident-details {
+  margin-top: 20px;
+}
+
+.incident-details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.close-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.close-btn:hover {
+  background: #c82333;
+}
+
+.incident-info {
+  background: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.incident-info p {
+  margin: 8px 0;
+  color: #333;
+}
+
+.events-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.event-detail-card {
+  background: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 15px;
+  border-left: 4px solid #007bff;
+}
+
+.event-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.event-number {
+  background: #007bff;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.event-type {
+  background: #e0e0e0;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: monospace;
+}
+
+.event-time {
+  margin-left: auto;
+  color: #666;
+  font-size: 12px;
+}
+
+.event-detail-body {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.detail-section {
+  background: white;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+}
+
+.detail-section strong {
+  display: block;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.detail-item {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+  align-items: flex-start;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: #666;
+  min-width: 120px;
+  font-size: 13px;
+}
+
+.detail-value {
+  flex: 1;
+  color: #333;
+  word-break: break-word;
+}
+
+.detail-value.code {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+  background: #f5f5f5;
+  padding: 8px;
+  border-radius: 4px;
+  overflow-x: auto;
+}
+
+.detail-value.code pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.body-content {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.honeytoken-alert {
+  background: #ffebee !important;
+  border-color: #c62828 !important;
+  border-left: 4px solid #c62828 !important;
+}
+
+.honeytoken-alert strong {
+  color: #c62828;
+  font-size: 14px;
+}

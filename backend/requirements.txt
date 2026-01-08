@@ -1,0 +1,28 @@
+# Core
+fastapi==0.120.0
+uvicorn[standard]==0.32.0
+pydantic==2.8.2
+pydantic-settings==2.5.0
+pydantic[email]==2.8.2
+python-dotenv==1.0.1
+python-multipart
+flask
+
+# Database
+sqlalchemy==2.0.40
+psycopg2-binary==2.9.11
+alembic==1.13.2
+
+# Security
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+bcrypt==4.0.1
+
+# Docker
+docker==7.1.0
+
+# Telegram
+aiogram==3.13.0
+
+# HTTP клиент
+aiohttp==3.10.5

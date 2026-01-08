@@ -1,0 +1,87 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: honey-potter-db
+    environment:
+      POSTGRES_USER: honeypot
+      POSTGRES_PASSWORD: honeypot_password
+      POSTGRES_DB: honeypot_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - default  # Только основная сеть, honeypot'ы не имеют доступа
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U honeypot -d honeypot_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: honey-potter-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - default  # Только основная сеть, honeypot'ы не имеют доступа
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: honey-potter-backend
+    environment:
+      # Используем localhost, т.к. postgres и redis проброшены на localhost
+      DATABASE_URL: postgresql://honeypot:honeypot_password@localhost:5432/honeypot_db
+      REDIS_URL: redis://localhost:6379/0
+      SECRET_KEY: ${SECRET_KEY:-change-this-secret-key-in-production}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+    volumes:
+      - ./backend:/app
+      - /var/run/docker.sock:/var/run/docker.sock  # Для доступа к Docker
+    # Используем host network для динамического доступа к любым портам honeypot'ов
+    # Это позволяет honeypot'ам слушать на любых портах без предварительной настройки
+    network_mode: host
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: honey-potter-frontend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  default:
+    name: honey-potter-network
+  honeypot-isolated:
+    name: honeypot-isolated-network
+    driver: bridge
+    internal: false  # Доступен извне для honeypot трафика, но изолирован от основной сети
+

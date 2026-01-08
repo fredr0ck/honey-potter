@@ -1,0 +1,19 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir flask requests
+
+COPY honeypot_runner.py /app/honeypot_runner.py
+
+RUN useradd -m -u 1000 honeypot && chown -R honeypot:honeypot /app
+USER honeypot
+
+EXPOSE 8080
+
+CMD ["python", "/app/honeypot_runner.py"]
+
