@@ -6,14 +6,14 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir flask requests
+RUN pip install --no-cache-dir Flask requests
 
 COPY honeypot_runner.py /app/honeypot_runner.py
+COPY postgres_honeypot_runner.py /app/postgres_honeypot_runner.py
 
 RUN useradd -m -u 1000 honeypot && chown -R honeypot:honeypot /app
 USER honeypot
 
-EXPOSE 8080
+EXPOSE 8080 5432
 
 CMD ["python", "/app/honeypot_runner.py"]
-

@@ -36,6 +36,14 @@ export default function Layout() {
           <div className="user-info">
             <span>{user?.username}</span>
           </div>
+          <a
+            href={`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/docs`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="docs-btn"
+          >
+            📚 Documentation
+          </a>
           <button onClick={logout} className="logout-btn">
             Logout
           </button>

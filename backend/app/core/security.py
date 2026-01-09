@@ -9,13 +9,11 @@ from app.core.config import settings
 from app.core.database import get_db
 from app.models.user import User
 
-# Password hashing
 if CryptContext:
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 else:
     pwd_context = None
 
-# OAuth2 для JWT
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
 
 

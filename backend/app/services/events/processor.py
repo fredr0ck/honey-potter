@@ -69,7 +69,9 @@ class EventProcessor:
                 'honeypot_name': honeypot.name if honeypot else None,
                 'source_ip': source_ip,
                 'timestamp': event.timestamp.isoformat(),
-                'honeytoken_username': honeytoken_username or details.get('honeytoken_username')
+                'event_type': event_type,
+                'honeytoken_username': honeytoken_username or details.get('honeytoken_username'),
+                'details': details
             },
             incident={
                 'id': str(incident.id) if incident else None,

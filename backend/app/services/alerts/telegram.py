@@ -42,13 +42,38 @@ class TelegramNotifier:
         event: Dict,
         incident: Optional[Dict] = None
     ) -> bool:
-        level_info = {
-            1: ("🔍", "LOW - Port Scan", "Port scanning"),
-            2: ("⚠️", "MEDIUM - Brute Force", "Brute force attempt"),
-            3: ("🚨", "CRITICAL - Compromise", "System compromise!")
-        }
+        event_type = event.get('event_type', 'unknown')
+        details = event.get('details', {})
         
-        emoji, level_text, description = level_info.get(level, ("📢", "Unknown", "Unknown event"))
+        if event_type in ('postgres_query', 'mysql_query', 'ssh_command', 'http_request'):
+            if level == 2:
+                emoji = "⚠️"
+                level_text = "MEDIUM - Command Execution"
+                description = "Command/query execution attempt"
+            else:
+                emoji = "🔍"
+                level_text = "LOW - Command Execution"
+                description = "Command/query execution"
+        elif event_type in ('postgres_auth_attempt', 'mysql_auth_attempt', 'ssh_auth_attempt', 'login_attempt'):
+            emoji = "⚠️"
+            level_text = "MEDIUM - Brute Force"
+            description = "Brute force attempt (credentials)"
+        elif event_type == 'credential_reuse':
+            emoji = "🚨"
+            level_text = "CRITICAL - Compromise"
+            description = "System compromise! Honeytoken used"
+        elif level == 3:
+            emoji = "🚨"
+            level_text = "CRITICAL - Compromise"
+            description = "System compromise!"
+        elif level == 2:
+            emoji = "⚠️"
+            level_text = "MEDIUM - Suspicious Activity"
+            description = "Suspicious activity detected"
+        else:
+            emoji = "🔍"
+            level_text = "LOW - Port Scan"
+            description = "Port scanning"
         
         message = f"{emoji} *{level_text}*\n\n"
         message += f"*Description:* {description}\n"
@@ -63,13 +88,35 @@ class TelegramNotifier:
         message += f"*Source IP:* `{event.get('source_ip', 'unknown')}`\n"
         message += f"*Time:* {event.get('timestamp', 'unknown')}\n"
         
+        if event_type in ('postgres_auth_attempt', 'mysql_auth_attempt', 'ssh_auth_attempt', 'login_attempt'):
+            username = details.get('username', 'unknown')
+            password = details.get('password', 'N/A')
+            message += f"\n*Credentials used:*\n"
+            message += f"Username: `{username}`\n"
+            message += f"Password: `{password}`\n"
+        
+        if event_type in ('postgres_query', 'mysql_query'):
+            query = details.get('query', details.get('parse_query', details.get('execute_query')))
+            if query:
+                query_preview = query[:200] + "..." if len(query) > 200 else query
+                message += f"\n*SQL Query:*\n```\n{query_preview}\n```\n"
+        elif event_type == 'ssh_command':
+            command = details.get('command', 'N/A')
+            message += f"\n*Command executed:*\n```\n{command}\n```\n"
+        elif event_type == 'http_request':
+            method = details.get('method', 'N/A')
+            path = details.get('path', 'N/A')
+            message += f"\n*Request:* `{method} {path}`\n"
+        
         if incident:
             message += f"\n*Incident:* #{incident.get('id', 'unknown')[:8]}\n"
             message += f"*Events in incident:* {incident.get('event_count', 0)}\n"
         
-        if level == 3:
+        if level == 3 or event_type == 'credential_reuse':
             message += f"\n⚠️ *CRITICAL!*\n"
-            message += f"Honeytoken used: `{event.get('honeytoken_username', 'unknown')}`\n"
+            honeytoken_username = event.get('honeytoken_username')
+            if honeytoken_username:
+                message += f"Honeytoken used: `{honeytoken_username}`\n"
             message += f"\nThis means attackers have already breached the server!\n"
             message += f"Urgently check the system!"
         

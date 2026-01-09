@@ -14,6 +14,9 @@ export default function Honeypots() {
   })
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [selectMode, setSelectMode] = useState(false)
+  const [loadingStates, setLoadingStates] = useState<Record<string, 'starting' | 'stopping' | 'restarting'>>({})
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editForm, setEditForm] = useState<any>(null)
   const queryClient = useQueryClient()
 
   const { data: honeypots, isLoading } = useQuery({
@@ -56,6 +59,7 @@ export default function Honeypots() {
   const startMutation = useMutation({
     mutationFn: (id: string) => api.post(`/honeypots/${id}/start`),
     onMutate: async (id: string) => {
+      setLoadingStates(prev => ({ ...prev, [id]: 'starting' }))
       await queryClient.cancelQueries({ queryKey: ['honeypots'] })
       const previousHoneypots = queryClient.getQueryData(['honeypots'])
       queryClient.setQueryData(['honeypots'], (old: any) => {
@@ -66,10 +70,20 @@ export default function Honeypots() {
       })
       return { previousHoneypots }
     },
-    onSuccess: () => {
+    onSuccess: (_, id: string) => {
+      setLoadingStates(prev => {
+        const newState = { ...prev }
+        delete newState[id]
+        return newState
+      })
       queryClient.invalidateQueries({ queryKey: ['honeypots'] })
     },
     onError: (error: any, id: string, context: any) => {
+      setLoadingStates(prev => {
+        const newState = { ...prev }
+        delete newState[id]
+        return newState
+      })
       if (context?.previousHoneypots) {
         queryClient.setQueryData(['honeypots'], context.previousHoneypots)
       }
@@ -83,6 +97,7 @@ export default function Honeypots() {
   const stopMutation = useMutation({
     mutationFn: (id: string) => api.post(`/honeypots/${id}/stop`),
     onMutate: async (id: string) => {
+      setLoadingStates(prev => ({ ...prev, [id]: 'stopping' }))
       await queryClient.cancelQueries({ queryKey: ['honeypots'] })
       const previousHoneypots = queryClient.getQueryData(['honeypots'])
       queryClient.setQueryData(['honeypots'], (old: any) => {
@@ -93,10 +108,20 @@ export default function Honeypots() {
       })
       return { previousHoneypots }
     },
-    onSuccess: () => {
+    onSuccess: (_, id: string) => {
+      setLoadingStates(prev => {
+        const newState = { ...prev }
+        delete newState[id]
+        return newState
+      })
       queryClient.invalidateQueries({ queryKey: ['honeypots'] })
     },
     onError: (error: any, id: string, context: any) => {
+      setLoadingStates(prev => {
+        const newState = { ...prev }
+        delete newState[id]
+        return newState
+      })
       if (context?.previousHoneypots) {
         queryClient.setQueryData(['honeypots'], context.previousHoneypots)
       }
@@ -106,6 +131,73 @@ export default function Honeypots() {
       queryClient.invalidateQueries({ queryKey: ['honeypots'] })
     },
   })
+
+  const restartMutation = useMutation({
+    mutationFn: (id: string) => api.post(`/honeypots/${id}/restart`),
+    onMutate: async (id: string) => {
+      setLoadingStates(prev => ({ ...prev, [id]: 'restarting' }))
+      await queryClient.cancelQueries({ queryKey: ['honeypots'] })
+      const previousHoneypots = queryClient.getQueryData(['honeypots'])
+      return { previousHoneypots }
+    },
+    onSuccess: (_, id: string) => {
+      setLoadingStates(prev => {
+        const newState = { ...prev }
+        delete newState[id]
+        return newState
+      })
+      queryClient.invalidateQueries({ queryKey: ['honeypots'] })
+    },
+    onError: (error: any, id: string, context: any) => {
+      setLoadingStates(prev => {
+        const newState = { ...prev }
+        delete newState[id]
+        return newState
+      })
+      if (context?.previousHoneypots) {
+        queryClient.setQueryData(['honeypots'], context.previousHoneypots)
+      }
+      console.error('Failed to restart honeypot:', error)
+      const errorMessage = error.response?.data?.detail || error.message || 'Failed to restart honeypot'
+      alert(`Error: ${errorMessage}`)
+      queryClient.invalidateQueries({ queryKey: ['honeypots'] })
+    },
+  })
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string, data: any }) => api.put(`/honeypots/${id}`, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['honeypots'] })
+      setEditingId(null)
+      setEditForm(null)
+    },
+    onError: (error: any) => {
+      console.error('Failed to update honeypot:', error)
+      const errorMessage = error.response?.data?.detail || error.message || 'Failed to update honeypot'
+      alert(`Error: ${errorMessage}`)
+    },
+  })
+
+  const handleEdit = (hp: any) => {
+    setEditingId(hp.id)
+    setEditForm({
+      name: hp.name || '',
+      description: hp.description || '',
+      type: hp.type || 'http',
+      port: hp.port || 8080,
+      address: hp.address || '0.0.0.0',
+    })
+  }
+
+  const handleCancelEdit = () => {
+    setEditingId(null)
+    setEditForm(null)
+  }
+
+  const handleSaveEdit = () => {
+    if (!editingId || !editForm) return
+    updateMutation.mutate({ id: editingId, data: editForm })
+  }
 
   const handleCreate = () => {
     if (!newHoneypot.name.trim()) {
@@ -287,7 +379,97 @@ export default function Honeypots() {
                   onChange={() => toggleSelect(hp.id)}
                 />
               )}
-              <div className="honeypot-details">
+              {!selectMode && (
+                <button
+                  className="edit-icon-btn"
+                  onClick={() => handleEdit(hp)}
+                  title="Edit honeypot"
+                  disabled={!!loadingStates[hp.id]}
+                >
+                  ✏️
+                </button>
+              )}
+              {editingId === hp.id ? (
+                <div className="edit-form">
+                  <h3>Edit Honeypot</h3>
+                  <div className="form-group">
+                    <label>
+                      Name:
+                      <input
+                        type="text"
+                        value={editForm?.name || ''}
+                        onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                      />
+                    </label>
+                  </div>
+                  <div className="form-group">
+                    <label>
+                      Description:
+                      <input
+                        type="text"
+                        value={editForm?.description || ''}
+                        onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                      />
+                    </label>
+                  </div>
+                  <div className="form-group">
+                    <label>
+                      Type:
+                      <select
+                        value={editForm?.type || 'http'}
+                        onChange={(e) => setEditForm({ ...editForm, type: e.target.value })}
+                        disabled={hp.status === 'running'}
+                      >
+                        <option value="ssh">SSH</option>
+                        <option value="postgres">PostgreSQL</option>
+                        <option value="http">HTTP</option>
+                      </select>
+                      {hp.status === 'running' && <small style={{ color: '#dc3545' }}>Stop honeypot to change type</small>}
+                    </label>
+                  </div>
+                  <div className="form-group">
+                    <label>
+                      Port:
+                      <input
+                        type="number"
+                        value={editForm?.port || 8080}
+                        onChange={(e) => setEditForm({ ...editForm, port: parseInt(e.target.value) || 8080 })}
+                        min="1"
+                        max="65535"
+                        disabled={hp.status === 'running'}
+                      />
+                      {hp.status === 'running' && <small style={{ color: '#dc3545' }}>Stop honeypot to change port</small>}
+                    </label>
+                  </div>
+                  <div className="form-group">
+                    <label>
+                      Address:
+                      <input
+                        type="text"
+                        value={editForm?.address || '0.0.0.0'}
+                        onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
+                      />
+                    </label>
+                  </div>
+                  <div className="edit-actions">
+                    <button
+                      onClick={handleSaveEdit}
+                      className="save-btn"
+                      disabled={updateMutation.isPending}
+                    >
+                      {updateMutation.isPending ? 'Saving...' : 'Save'}
+                    </button>
+                    <button
+                      onClick={handleCancelEdit}
+                      className="cancel-btn"
+                      disabled={updateMutation.isPending}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="honeypot-details">
                 <div className="honeypot-info">
                   <h3>{hp.name || `${hp.type.toUpperCase()} Honeypot`}</h3>
                   <p>Type: {hp.type.toUpperCase()}</p>
@@ -303,34 +485,46 @@ export default function Honeypots() {
                     <p>{hp.description}</p>
                   </div>
                 )}
+                {!selectMode && (
+                  <div className="honeypot-actions">
+                    {hp.status === 'running' ? (
+                      <>
+                        <button
+                          onClick={() => stopMutation.mutate(hp.id)}
+                          className="stop-btn"
+                          disabled={!!loadingStates[hp.id]}
+                        >
+                          {loadingStates[hp.id] === 'stopping' ? 'Stopping...' : 'Stop'}
+                        </button>
+                        <button
+                          onClick={() => restartMutation.mutate(hp.id)}
+                          className="restart-btn"
+                          disabled={!!loadingStates[hp.id]}
+                          title="Restart honeypot"
+                        >
+                          {loadingStates[hp.id] === 'restarting' ? 'Restarting...' : '🔄 Restart'}
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={() => startMutation.mutate(hp.id)}
+                        className="start-btn"
+                        disabled={!!loadingStates[hp.id]}
+                      >
+                        {loadingStates[hp.id] === 'starting' ? 'Starting...' : 'Start'}
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleDelete(hp.id)}
+                      className="delete-btn"
+                      title="Delete honeypot"
+                      disabled={!!loadingStates[hp.id]}
+                    >
+                      🗑️ Delete
+                    </button>
+                  </div>
+                )}
               </div>
-              {!selectMode && (
-                <div className="honeypot-actions">
-                  {hp.status === 'running' ? (
-                    <button
-                      onClick={() => stopMutation.mutate(hp.id)}
-                      className="stop-btn"
-                      disabled={stopMutation.isPending}
-                    >
-                      {stopMutation.isPending ? 'Stopping...' : 'Stop'}
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => startMutation.mutate(hp.id)}
-                      className="start-btn"
-                      disabled={startMutation.isPending}
-                    >
-                      {startMutation.isPending ? 'Starting...' : 'Start'}
-                    </button>
-                  )}
-                  <button
-                    onClick={() => handleDelete(hp.id)}
-                    className="delete-btn"
-                    title="Delete honeypot"
-                  >
-                    🗑️ Delete
-                  </button>
-                </div>
               )}
             </div>
           )) : <p>No honeypots yet. Create one to get started!</p>}

@@ -167,6 +167,31 @@
   cursor: pointer;
 }
 
+.edit-icon-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 5px 8px;
+  border-radius: 4px;
+  transition: background 0.2s;
+  opacity: 0.7;
+  z-index: 5;
+}
+
+.edit-icon-btn:hover:not(:disabled) {
+  background: #f0f0f0;
+  opacity: 1;
+}
+
+.edit-icon-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
 .honeypot-details {
   display: flex;
   flex-direction: column;
@@ -242,7 +267,8 @@
 }
 
 .start-btn,
-.stop-btn {
+.stop-btn,
+.restart-btn {
   padding: 6px 12px;
   border: none;
   border-radius: 4px;
@@ -270,8 +296,104 @@
   background: #c82333;
 }
 
+.restart-btn {
+  background: #ffc107;
+  color: #212529;
+}
+
+.restart-btn:hover:not(:disabled) {
+  background: #e0a800;
+}
+
 .start-btn:disabled,
-.stop-btn:disabled {
+.stop-btn:disabled,
+.restart-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.edit-form {
+  width: 100%;
+  padding: 15px;
+  background: #f9f9f9;
+  border-radius: 6px;
+  margin-bottom: 15px;
+}
+
+.edit-form h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.edit-form .form-group {
+  margin-bottom: 15px;
+}
+
+.edit-form .form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+  color: #333;
+}
+
+.edit-form .form-group input,
+.edit-form .form-group select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.edit-form .form-group input:disabled,
+.edit-form .form-group select:disabled {
+  background: #e9ecef;
+  cursor: not-allowed;
+}
+
+.edit-form .form-group small {
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.save-btn,
+.cancel-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.save-btn {
+  background: #28a745;
+  color: white;
+}
+
+.save-btn:hover:not(:disabled) {
+  background: #218838;
+}
+
+.cancel-btn {
+  background: #6c757d;
+  color: white;
+}
+
+.cancel-btn:hover:not(:disabled) {
+  background: #5a6268;
+}
+
+.save-btn:disabled,
+.cancel-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }

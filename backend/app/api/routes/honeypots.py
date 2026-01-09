@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from app.schemas.honeypot import HoneypotCreate, HoneypotResponse
+from app.schemas.honeypot import HoneypotCreate, HoneypotResponse, HoneypotUpdate
 from app.services.honeypot.manager import HoneypotManager
 from app.core.database import get_db
 from app.core.security import get_current_active_user
@@ -60,6 +60,35 @@ async def create_honeypot(
     )
 
 
+@router.put("/honeypots/{honeypot_id}", response_model=HoneypotResponse)
+async def update_honeypot(
+    honeypot_id: str,
+    update_data: HoneypotUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    try:
+        honeypot = await manager.update_honeypot(db, honeypot_id, update_data)
+        return HoneypotResponse(
+            id=str(honeypot.id),
+            name=honeypot.name,
+            description=honeypot.description,
+            type=honeypot.type,
+            port=honeypot.port,
+            address=honeypot.address,
+            status=honeypot.status.value if hasattr(honeypot.status, 'value') else str(honeypot.status),
+            config=honeypot.config,
+            docker_container_id=honeypot.docker_container_id,
+            notification_levels=honeypot.notification_levels,
+            created_at=honeypot.created_at,
+            updated_at=honeypot.updated_at
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except RuntimeError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.post("/honeypots/{honeypot_id}/start")
 async def start_honeypot(
     honeypot_id: str, 
@@ -84,6 +113,21 @@ async def stop_honeypot(
     try:
         await manager.stop_honeypot(db, honeypot_id)
         return {"status": "stopped", "honeypot_id": honeypot_id}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except RuntimeError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/honeypots/{honeypot_id}/restart")
+async def restart_honeypot(
+    honeypot_id: str, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user)
+):
+    try:
+        await manager.restart_honeypot(db, honeypot_id)
+        return {"status": "restarted", "honeypot_id": honeypot_id}
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except RuntimeError as e:

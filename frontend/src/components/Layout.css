@@ -61,6 +61,26 @@
   font-size: 14px;
 }
 
+.docs-btn {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  background: #17a2b8;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: none;
+  text-align: center;
+  margin-bottom: 10px;
+  transition: background 0.2s;
+}
+
+.docs-btn:hover {
+  background: #138496;
+}
+
 .logout-btn {
   width: 100%;
   padding: 8px;

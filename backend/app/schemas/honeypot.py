@@ -11,6 +11,15 @@ class HoneypotCreate(BaseModel):
     config: Dict = {}  # Дополнительная конфигурация
     notification_levels: Dict[str, bool] = {"1": False, "2": True, "3": True}  # Какие уровни уведомлять
 
+class HoneypotUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    type: Optional[str] = None  # postgres, mysql, ssh, http
+    port: Optional[int] = None
+    address: Optional[str] = None
+    config: Optional[Dict] = None
+    notification_levels: Optional[Dict[str, bool]] = None
+
 class HoneypotResponse(BaseModel):
     id: str
     name: Optional[str] = None

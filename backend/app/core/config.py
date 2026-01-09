@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     
     database_url: str = "postgresql://honeypot:honeypot_password@postgres:5432/honeypot_db"
     
-    redis_url: str = "redis://localhost:6379/0"
+    redis_url: str = "redis://redis:6379/0"
     
     secret_key: str = "change-this-secret-key-in-production"
     algorithm: str = "HS256"

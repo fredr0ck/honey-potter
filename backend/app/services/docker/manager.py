@@ -112,11 +112,21 @@ class DockerManager:
         
         await asyncio.to_thread(_remove_existing)
         
-        image_name = "honey-potter-http-honeypot"
+        if honeypot_type == "http":
+            image_name = "honey-potter-http-honeypot"
+            dockerfile_name = "Dockerfile.honeypot"
+            runner_file = "honeypot_runner.py"
+        elif honeypot_type == "postgres":
+            image_name = "honey-potter-postgres-honeypot"
+            dockerfile_name = "Dockerfile.honeypot"
+            runner_file = "postgres_honeypot_runner.py"
+        else:
+            raise ValueError(f"Unsupported honeypot type: {honeypot_type}")
+        
         import os
-        dockerfile_path = os.path.join(os.path.dirname(__file__), "../../../Dockerfile.honeypot")
+        dockerfile_path = os.path.join(os.path.dirname(__file__), "../../../", dockerfile_name)
         if not os.path.exists(dockerfile_path):
-            raise RuntimeError("Dockerfile.honeypot not found")
+            raise RuntimeError(f"{dockerfile_name} not found")
         
         def _remove_image():
             try:
@@ -136,6 +146,10 @@ class DockerManager:
                 rm=True,
                 forcerm=True
             )
+        
+        runner_path = os.path.join(os.path.dirname(dockerfile_path), runner_file)
+        if not os.path.exists(runner_path):
+            raise RuntimeError(f"{runner_file} not found")
         
         print(f"[DOCKER] Building honeypot image: {image_name}")
         await asyncio.to_thread(_build_image)
@@ -163,11 +177,14 @@ class DockerManager:
         }
         
         def _run_isolated_container():
+            cmd = ["python", f"/app/{runner_file}"]
+            
             return self.client.containers.run(
                 image=image_name,
                 name=container_name,
                 ports=ports,
                 environment=env_vars,
+                command=cmd,
                 detach=True,
                 remove=False,
                 network="honeypot-isolated-network",

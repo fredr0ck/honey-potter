@@ -130,53 +130,102 @@ export default function Events() {
                       <span className="event-time">{new Date(event.timestamp).toLocaleString()}</span>
                     </div>
                     <div className="event-detail-body">
-                      <div className="detail-section">
-                        <strong>Request Details:</strong>
-                        <div className="detail-item">
-                          <span className="detail-label">Method:</span>
-                          <span className="detail-value">{event.details?.method || 'N/A'}</span>
-                        </div>
-                        <div className="detail-item">
-                          <span className="detail-label">Path:</span>
-                          <span className="detail-value code">{event.details?.path || 'N/A'}</span>
-                        </div>
-                        <div className="detail-item">
-                          <span className="detail-label">Full URL:</span>
-                          <span className="detail-value code">{event.details?.full_url || 'N/A'}</span>
-                        </div>
-                        {event.details?.query && Object.keys(event.details.query).length > 0 && (
-                          <div className="detail-item">
-                            <span className="detail-label">Query Params:</span>
-                            <pre className="detail-value code">{JSON.stringify(event.details.query, null, 2)}</pre>
+                      {(event.event_type?.startsWith('postgres') || event.details?.username || event.details?.database) ? (
+                        <>
+                          <div className="detail-section">
+                            <strong>PostgreSQL Connection Details:</strong>
+                            {event.details?.username && (
+                              <div className="detail-item">
+                                <span className="detail-label">Username:</span>
+                                <span className="detail-value code">{event.details.username}</span>
+                              </div>
+                            )}
+                            {event.details?.password && (
+                              <div className="detail-item">
+                                <span className="detail-label">Password:</span>
+                                <span className="detail-value code" style={{ color: '#ff6b6b', fontWeight: 'bold' }}>{event.details.password}</span>
+                              </div>
+                            )}
+                            {event.details?.database && (
+                              <div className="detail-item">
+                                <span className="detail-label">Database:</span>
+                                <span className="detail-value code">{event.details.database}</span>
+                              </div>
+                            )}
+                            {event.details?.query && (
+                              <div className="detail-item">
+                                <span className="detail-label">SQL Query:</span>
+                                <pre className="detail-value code body-content" style={{ background: '#1e1e1e', padding: '10px', borderRadius: '4px', marginTop: '5px', color: '#d4d4d4' }}>{event.details.query}</pre>
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                      {event.details?.headers && (
-                        <div className="detail-section">
-                          <strong>Headers:</strong>
-                          <pre className="detail-value code">{JSON.stringify(event.details.headers, null, 2)}</pre>
-                        </div>
-                      )}
-                      {(event.details?.body || event.details?.body_length > 0) && (
-                        <div className="detail-section">
-                          <strong>Request Body:</strong>
-                          {event.details.body ? (
-                            <pre className="detail-value code body-content">{event.details.body}</pre>
-                          ) : (
-                            <pre className="detail-value code body-content">[Body exists but content not captured, length: {event.details.body_length} bytes]</pre>
+                          {event.details?.startup_params && Object.keys(event.details.startup_params).length > 0 && (
+                            <div className="detail-section">
+                              <strong>Startup Parameters:</strong>
+                              <pre className="detail-value code">{JSON.stringify(event.details.startup_params, null, 2)}</pre>
+                            </div>
                           )}
-                        </div>
-                      )}
-                      {event.details?.cookies && Object.keys(event.details.cookies).length > 0 && (
-                        <div className="detail-section">
-                          <strong>Cookies:</strong>
-                          <pre className="detail-value code">{JSON.stringify(event.details.cookies, null, 2)}</pre>
-                        </div>
+                          {event.details?.request_text && (
+                            <div className="detail-section">
+                              <strong>Raw Request Data:</strong>
+                              <pre className="detail-value code body-content" style={{ background: '#1e1e1e', padding: '10px', borderRadius: '4px', fontSize: '12px', maxHeight: '200px', overflow: 'auto', color: '#d4d4d4' }}>{event.details.request_text}</pre>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          <div className="detail-section">
+                            <strong>Request Details:</strong>
+                            <div className="detail-item">
+                              <span className="detail-label">Method:</span>
+                              <span className="detail-value">{event.details?.method || 'N/A'}</span>
+                            </div>
+                            <div className="detail-item">
+                              <span className="detail-label">Path:</span>
+                              <span className="detail-value code">{event.details?.path || 'N/A'}</span>
+                            </div>
+                            <div className="detail-item">
+                              <span className="detail-label">Full URL:</span>
+                              <span className="detail-value code">{event.details?.full_url || 'N/A'}</span>
+                            </div>
+                            {event.details?.query && Object.keys(event.details.query).length > 0 && (
+                              <div className="detail-item">
+                                <span className="detail-label">Query Params:</span>
+                                <pre className="detail-value code">{JSON.stringify(event.details.query, null, 2)}</pre>
+                              </div>
+                            )}
+                          </div>
+                          {event.details?.headers && (
+                            <div className="detail-section">
+                              <strong>Headers:</strong>
+                              <pre className="detail-value code">{JSON.stringify(event.details.headers, null, 2)}</pre>
+                            </div>
+                          )}
+                          {(event.details?.body || event.details?.body_length > 0) && (
+                            <div className="detail-section">
+                              <strong>Request Body:</strong>
+                              {event.details.body ? (
+                                <pre className="detail-value code body-content">{event.details.body}</pre>
+                              ) : (
+                                <pre className="detail-value code body-content">[Body exists but content not captured, length: {event.details.body_length} bytes]</pre>
+                              )}
+                            </div>
+                          )}
+                          {event.details?.cookies && Object.keys(event.details.cookies).length > 0 && (
+                            <div className="detail-section">
+                              <strong>Cookies:</strong>
+                              <pre className="detail-value code">{JSON.stringify(event.details.cookies, null, 2)}</pre>
+                            </div>
+                          )}
+                        </>
                       )}
                       {event.honeytoken_id && (
                         <div className="detail-section honeytoken-alert">
                           <strong>⚠️ Honeytoken Detected!</strong>
                           <p>Honeytoken ID: {event.honeytoken_id}</p>
+                          {event.details?.honeytoken_username && (
+                            <p>Username: <strong>{event.details.honeytoken_username}</strong></p>
+                          )}
                         </div>
                       )}
                     </div>

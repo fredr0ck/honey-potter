@@ -20,14 +20,13 @@ class Incident(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     honeypot_id = Column(UUID(as_uuid=True), ForeignKey("honeypot_services.id"), nullable=False)
     source_ip = Column(String, nullable=False, index=True)
-    threat_level = Column(Integer, nullable=False)  # Максимальный уровень из событий (1, 2, 3)
+    threat_level = Column(Integer, nullable=False)
     status = Column(Enum(IncidentStatus), default=IncidentStatus.NEW)
-    event_count = Column(Integer, default=1)  # Количество событий в инциденте
+    event_count = Column(Integer, default=1)
     first_seen = Column(DateTime(timezone=True), server_default=func.now())
     last_seen = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
-    details = Column(JSON, default={})  # Дополнительная информация
+    details = Column(JSON, default={})
     
-    # Relationships
     honeypot = relationship("HoneypotService", backref="incidents")
     events = relationship("Event", back_populates="incident")
     

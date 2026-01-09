@@ -2,7 +2,7 @@ import uuid
 import asyncio
 from sqlalchemy.orm import Session
 from app.models.honeypot import HoneypotService, HoneypotStatus
-from app.schemas.honeypot import HoneypotCreate
+from app.schemas.honeypot import HoneypotCreate, HoneypotUpdate
 from app.services.docker.manager import DockerManager
 
 class HoneypotManager:
@@ -44,6 +44,41 @@ class HoneypotManager:
         
         return db_honeypot
     
+    async def update_honeypot(
+        self,
+        db: Session,
+        honeypot_id: str,
+        update_data: HoneypotUpdate
+    ):
+        honeypot = await self.get_honeypot(db, honeypot_id)
+        if not honeypot:
+            raise ValueError("Honeypot not found")
+        
+        if honeypot.status == HoneypotStatus.RUNNING:
+            if update_data.type is not None and update_data.type != honeypot.type:
+                raise ValueError("Cannot change type while honeypot is running. Stop it first.")
+            if update_data.port is not None and update_data.port != honeypot.port:
+                raise ValueError("Cannot change port while honeypot is running. Stop it first.")
+        
+        if update_data.name is not None:
+            honeypot.name = update_data.name
+        if update_data.description is not None:
+            honeypot.description = update_data.description
+        if update_data.type is not None:
+            honeypot.type = update_data.type
+        if update_data.port is not None:
+            honeypot.port = update_data.port
+        if update_data.address is not None:
+            honeypot.address = update_data.address
+        if update_data.config is not None:
+            honeypot.config = update_data.config
+        if update_data.notification_levels is not None:
+            honeypot.notification_levels = update_data.notification_levels
+        
+        db.commit()
+        db.refresh(honeypot)
+        return honeypot
+    
     async def start_honeypot(self, db: Session, honeypot_id: str):
         honeypot = await self.get_honeypot(db, honeypot_id)
         if not honeypot:
@@ -72,6 +107,27 @@ class HoneypotManager:
                 honeypot.status = HoneypotStatus.ERROR
                 db.commit()
                 raise RuntimeError(f"Failed to start HTTP honeypot: {e}")
+        
+        if honeypot.type == "postgres":
+            try:
+                container_name = f"honeypot-postgres-{honeypot.id}"
+                
+                container_id = await self.docker_manager.create_isolated_honeypot_container(
+                    container_name=container_name,
+                    honeypot_type="postgres",
+                    port=honeypot.port,
+                    service_id=str(honeypot.id),
+                    config=honeypot.config
+                )
+                
+                honeypot.docker_container_id = container_id
+                honeypot.status = HoneypotStatus.RUNNING
+                db.commit()
+                return
+            except Exception as e:
+                honeypot.status = HoneypotStatus.ERROR
+                db.commit()
+                raise RuntimeError(f"Failed to start PostgreSQL honeypot: {e}")
         
         if honeypot.docker_container_id:
             success = await self.docker_manager.start_container(honeypot.docker_container_id)
@@ -102,7 +158,7 @@ class HoneypotManager:
         if not honeypot:
             raise ValueError("Honeypot not found")
         
-        if honeypot.type == "http":
+        if honeypot.type in ["http", "postgres"]:
             if honeypot.docker_container_id:
                 success = await self.docker_manager.stop_container(honeypot.docker_container_id)
                 if success:
@@ -110,7 +166,7 @@ class HoneypotManager:
                     db.commit()
                     return
                 else:
-                    raise RuntimeError("Failed to stop HTTP honeypot container")
+                    raise RuntimeError(f"Failed to stop {honeypot.type} honeypot container")
             else:
                 honeypot.status = HoneypotStatus.STOPPED
                 db.commit()
@@ -127,6 +183,18 @@ class HoneypotManager:
             db.commit()
         else:
             raise RuntimeError("Failed to stop container")
+    
+    async def restart_honeypot(self, db: Session, honeypot_id: str):
+        """Restart honeypot: stop and then start"""
+        honeypot = await self.get_honeypot(db, honeypot_id)
+        if not honeypot:
+            raise ValueError("Honeypot not found")
+        
+        if honeypot.status == HoneypotStatus.RUNNING:
+            await self.stop_honeypot(db, honeypot_id)
+            db.refresh(honeypot)
+        
+        await self.start_honeypot(db, honeypot_id)
     
     async def delete_honeypot(self, db: Session, honeypot_id: str):
         honeypot = await self.get_honeypot(db, honeypot_id)
