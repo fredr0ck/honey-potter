@@ -503,7 +503,7 @@ async def handle_client(reader, writer):
                         await send_query_response(writer)
                     else:
                         if query is None:
-                        print(f"[POSTGRES-HONEYPOT] Failed to parse query message, raw: {msg_data.hex()}")
+                            print(f"[POSTGRES-HONEYPOT] Failed to parse query message, raw: {msg_data.hex()}")
                         elif not query.strip():
                             print(f"[POSTGRES-HONEYPOT] Empty query received")
                         await send_ready_for_query(writer)
