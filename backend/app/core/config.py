@@ -1,5 +1,13 @@
 from pydantic_settings import BaseSettings
 from typing import Optional
+import os
+
+
+def get_allowed_origins() -> list[str]:
+    origins_env = os.environ.get("ALLOWED_ORIGINS", "").strip()
+    if origins_env:
+        return [origin.strip() for origin in origins_env.split(",") if origin.strip()]
+    return ["*"]
 
 
 class Settings(BaseSettings):
@@ -23,7 +31,9 @@ class Settings(BaseSettings):
     
     docker_socket: str = "unix://var/run/docker.sock"
     
-    allowed_origins: list[str] = ["http://localhost:3000", "http://localhost:5173", "http://127.0.0.1:3000", "http://127.0.0.1:5173"]
+    @property
+    def allowed_origins(self) -> list[str]:
+        return get_allowed_origins()
     
     class Config:
         env_file = ".env"
