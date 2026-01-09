@@ -17,7 +17,6 @@ router = APIRouter()
 @router.post("/auth/login", response_model=Token)
 async def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
-    db: Session = Depends(get_db)
 ):
     if form_data.username != settings.admin_username or form_data.password != settings.admin_password:
         raise HTTPException(
@@ -26,41 +25,8 @@ async def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    user = db.query(User).filter(User.username == settings.admin_username).first()
-    
-    if not user:
-        from app.core.security import get_password_hash
-        from app.models.notification_settings import NotificationSettings
-        
-        user = User(
-            username=settings.admin_username,
-            email=None,
-            hashed_password=get_password_hash(settings.admin_password),
-            is_active=True,
-            is_superuser=True
-        )
-        db.add(user)
-        db.commit()
-        db.refresh(user)
-        
-        notification_settings = NotificationSettings(
-            user_id=user.id,
-            telegram_enabled=True,
-            level_1_enabled=False,
-            level_2_enabled=True,
-            level_3_enabled=True
-        )
-        db.add(notification_settings)
-        db.commit()
-    
-    if not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Inactive user"
-        )
-    
-    access_token = create_access_token(data={"sub": user.username})
-    refresh_token = create_refresh_token(data={"sub": user.username})
+    access_token = create_access_token(data={"sub": settings.admin_username})
+    refresh_token = create_refresh_token(data={"sub": settings.admin_username})
     
     return Token(
         access_token=access_token,

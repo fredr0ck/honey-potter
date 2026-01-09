@@ -37,7 +37,13 @@ export default function Layout() {
             <span>{user?.username}</span>
           </div>
           <a
-            href={`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/docs`}
+            href={(() => {
+              if (typeof window === 'undefined') return 'http://localhost:8000/docs'
+              const protocol = window.location.protocol
+              const hostname = window.location.hostname
+              const port = window.location.port === '3000' ? '8000' : window.location.port
+              return `${protocol}//${hostname}${port ? `:${port}` : ''}/docs`
+            })()}
             target="_blank"
             rel="noopener noreferrer"
             className="docs-btn"

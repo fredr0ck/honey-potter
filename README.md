@@ -1,16 +1,16 @@
-# Honey Potter [[RU](./README.ru.md)]
+# Honey Potter
 
-Honeypot management system for monitoring and detecting attacks
+Система управления honeypot для мониторинга и обнаружения атак.
 
-## Quick start
+## Запуск
 
-1. Clone repository
+1. Клонируйте репозиторий:
 ```bash
 git clone github.com/fredr0ck/honey-potter
 cd honey-potter
 ```
 
-2. Rename .env.example to .env
+2. Переименуйте .env.example в .env
 ```env
 ADMIN_USERNAME=CHANGE_ME
 ADMIN_PASSWORD=CHANGE_ME
@@ -29,22 +29,22 @@ DOCKER_SOCKET=unix://var/run/docker.sock
 
 ```
 
-3. Start Docker
+3. Запустите Docker:
 ```bash
 docker-compose up -d
 ```
 
-4. Web will be available on http://localhost:3000
+4. Веб-интерфейс будет доступен на http://localhost:3000
 
 
-## Supported honeypots
+## Поддерживаемые типы Honeypot
 
-- **PostgreSQL**: logs connections, authentication attempts, and SQL-queries
-- **SSH**: logs connections and authentication attempts
-- **HTTP**: logs HTTP requests
+- **PostgreSQL**: логирует подключения, попытки аутентификации и SQL запросы
+- **SSH**: логирует подключения и попытки аутентификации
+- **HTTP**: логирует HTTP запросы
 
-## Event levels
+## Уровни событий
 
-- **LOW (1)**: connections, port scanning
-- **MEDIUM (2)**: bruteforce, command execution
-- **CRITICAL (3)**: using a honeypot -> compromising the system
+- **LOW (1)**: обычные подключения, сканирование портов
+- **MEDIUM (2)**: попытки брутфорса, выполнение команд
+- **CRITICAL (3)**: использование honeytoken, компрометация системы

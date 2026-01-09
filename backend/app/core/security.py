@@ -79,6 +79,44 @@ async def get_current_user(
     except (JWTError, Exception):
         raise credentials_exception
     
+    if username == settings.admin_username:
+        from app.core.security import get_password_hash
+        from app.models.notification_settings import NotificationSettings
+        
+        user = db.query(User).filter(User.username == settings.admin_username).first()
+        
+        if not user:
+            user = User(
+                username=settings.admin_username,
+                email=None,
+                hashed_password=get_password_hash(settings.admin_password),
+                is_active=True,
+                is_superuser=True
+            )
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+        
+        if not user.is_active:
+            raise HTTPException(status_code=400, detail="Inactive user")
+        
+        notification_settings = db.query(NotificationSettings).filter(
+            NotificationSettings.user_id == user.id
+        ).first()
+        
+        if not notification_settings:
+            notification_settings = NotificationSettings(
+                user_id=user.id,
+                telegram_enabled=True,
+                level_1_enabled=False,
+                level_2_enabled=True,
+                level_3_enabled=True
+            )
+            db.add(notification_settings)
+            db.commit()
+        
+        return user
+    
     user = db.query(User).filter(User.username == username).first()
     if user is None:
         raise credentials_exception
