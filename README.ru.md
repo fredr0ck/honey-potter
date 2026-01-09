@@ -1,4 +1,4 @@
-# Honey Potter
+# Honey Potter  [[EN](./README.md)]
 
 Система управления honeypot для мониторинга и обнаружения атак.
 

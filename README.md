@@ -1,4 +1,4 @@
-# Honey Potter
+# Honey Potter [[RU](./README.ru.md)]
 
 Honeypot management system for monitoring and detecting attacks
 
