@@ -54,10 +54,15 @@ class TelegramNotifier:
                 emoji = "🔍"
                 level_text = "LOW - Command Execution"
                 description = "Command/query execution"
-        elif event_type in ('postgres_auth_attempt', 'mysql_auth_attempt', 'ssh_auth_attempt', 'login_attempt'):
-            emoji = "⚠️"
-            level_text = "MEDIUM - Brute Force"
-            description = "Brute force attempt (credentials)"
+        elif event_type in ('postgres_auth_attempt', 'mysql_auth_attempt', 'ssh_auth_attempt', 'login_attempt', 'ssh_connection'):
+            if event_type == 'ssh_connection':
+                emoji = "🔍"
+                level_text = "LOW - SSH Connection"
+                description = "SSH connection attempt"
+            else:
+                emoji = "⚠️"
+                level_text = "MEDIUM - Brute Force"
+                description = "Brute force attempt (credentials)"
         elif event_type == 'credential_reuse':
             emoji = "🚨"
             level_text = "CRITICAL - Compromise"
@@ -70,6 +75,10 @@ class TelegramNotifier:
             emoji = "⚠️"
             level_text = "MEDIUM - Suspicious Activity"
             description = "Suspicious activity detected"
+        elif event_type in ('ssh_connection', 'ssh_version_exchange', 'ssh_kexinit', 'ssh_raw_data'):
+            emoji = "🔍"
+            level_text = "LOW - SSH Connection"
+            description = "SSH connection activity"
         else:
             emoji = "🔍"
             level_text = "LOW - Port Scan"
@@ -102,7 +111,16 @@ class TelegramNotifier:
                 message += f"\n*SQL Query:*\n```\n{query_preview}\n```\n"
         elif event_type == 'ssh_command':
             command = details.get('command', 'N/A')
-            message += f"\n*Command executed:*\n```\n{command}\n```\n"
+            username = details.get('username', 'unknown')
+            message += f"\n*SSH Command:*\n"
+            message += f"Username: `{username}`\n"
+            message += f"Command: ```\n{command}\n```\n"
+        elif event_type == 'ssh_connection':
+            username = details.get('username', 'unknown')
+            method = details.get('method', 'N/A')
+            message += f"\n*Connection attempt:*\n"
+            message += f"Username: `{username}`\n"
+            message += f"Method: `{method}`\n"
         elif event_type == 'http_request':
             method = details.get('method', 'N/A')
             path = details.get('path', 'N/A')

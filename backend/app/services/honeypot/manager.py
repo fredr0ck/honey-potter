@@ -129,6 +129,27 @@ class HoneypotManager:
                 db.commit()
                 raise RuntimeError(f"Failed to start PostgreSQL honeypot: {e}")
         
+        if honeypot.type == "ssh":
+            try:
+                container_name = f"honeypot-ssh-{honeypot.id}"
+                
+                container_id = await self.docker_manager.create_isolated_honeypot_container(
+                    container_name=container_name,
+                    honeypot_type="ssh",
+                    port=honeypot.port,
+                    service_id=str(honeypot.id),
+                    config=honeypot.config
+                )
+                
+                honeypot.docker_container_id = container_id
+                honeypot.status = HoneypotStatus.RUNNING
+                db.commit()
+                return
+            except Exception as e:
+                honeypot.status = HoneypotStatus.ERROR
+                db.commit()
+                raise RuntimeError(f"Failed to start SSH honeypot: {e}")
+        
         if honeypot.docker_container_id:
             success = await self.docker_manager.start_container(honeypot.docker_container_id)
             if success:
@@ -158,7 +179,7 @@ class HoneypotManager:
         if not honeypot:
             raise ValueError("Honeypot not found")
         
-        if honeypot.type in ["http", "postgres"]:
+        if honeypot.type in ["http", "postgres", "ssh"]:
             if honeypot.docker_container_id:
                 success = await self.docker_manager.stop_container(honeypot.docker_container_id)
                 if success:

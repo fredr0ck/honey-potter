@@ -120,6 +120,10 @@ class DockerManager:
             image_name = "honey-potter-postgres-honeypot"
             dockerfile_name = "Dockerfile.honeypot"
             runner_file = "postgres_honeypot_runner.py"
+        elif honeypot_type == "ssh":
+            image_name = "honey-potter-ssh-honeypot"
+            dockerfile_name = "Dockerfile.honeypot"
+            runner_file = "ssh_honeypot_runner.py"
         else:
             raise ValueError(f"Unsupported honeypot type: {honeypot_type}")
         

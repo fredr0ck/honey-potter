@@ -172,6 +172,54 @@ export default function Events() {
                             </div>
                           )}
                         </>
+                      ) : (event.event_type?.startsWith('ssh') || (event.details?.username && event.details?.command)) ? (
+                        <>
+                          <div className="detail-section">
+                            <strong>SSH Connection Details:</strong>
+                            {event.details?.username && (
+                              <div className="detail-item">
+                                <span className="detail-label">Username:</span>
+                                <span className="detail-value code">{event.details.username}</span>
+                              </div>
+                            )}
+                            {event.details?.password && (
+                              <div className="detail-item">
+                                <span className="detail-label">Password:</span>
+                                <span className="detail-value code" style={{ color: '#ff6b6b', fontWeight: 'bold' }}>{event.details.password}</span>
+                              </div>
+                            )}
+                            {event.details?.method && (
+                              <div className="detail-item">
+                                <span className="detail-label">Auth Method:</span>
+                                <span className="detail-value code">{event.details.method}</span>
+                              </div>
+                            )}
+                            {event.details?.command && (
+                              <div className="detail-item">
+                                <span className="detail-label">Command:</span>
+                                <pre className="detail-value code body-content" style={{ background: '#1e1e1e', padding: '10px', borderRadius: '4px', marginTop: '5px', color: '#d4d4d4' }}>{event.details.command}</pre>
+                              </div>
+                            )}
+                            {event.details?.local_version && (
+                              <div className="detail-item">
+                                <span className="detail-label">Local Version:</span>
+                                <span className="detail-value code">{event.details.local_version}</span>
+                              </div>
+                            )}
+                            {event.details?.remote_version && (
+                              <div className="detail-item">
+                                <span className="detail-label">Remote Version:</span>
+                                <span className="detail-value code">{event.details.remote_version}</span>
+                              </div>
+                            )}
+                          </div>
+                          {event.details?.request_text && (
+                            <div className="detail-section">
+                              <strong>Raw Request Data:</strong>
+                              <pre className="detail-value code body-content" style={{ background: '#1e1e1e', padding: '10px', borderRadius: '4px', fontSize: '12px', maxHeight: '200px', overflow: 'auto', color: '#d4d4d4' }}>{event.details.request_text}</pre>
+                            </div>
+                          )}
+                        </>
                       ) : (
                         <>
                           <div className="detail-section">

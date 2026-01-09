@@ -1,5 +1,7 @@
 import uuid
 import secrets
+import random
+import string
 from typing import Dict, Optional
 
 
@@ -9,11 +11,25 @@ class CredentialGenerator:
         self.prefix = prefix
     
     def generate_username(self, service_type: str) -> str:
-        unique_id = str(uuid.uuid4()).replace('-', '')[:12]
-        return f"{self.prefix}_{service_type}_{unique_id}"
+        username_patterns = [
+            lambda: f"user{random.randint(1000, 9999)}",
+            lambda: f"admin{random.randint(100, 999)}",
+            lambda: f"test{random.randint(100, 999)}",
+            lambda: f"guest{random.randint(10, 99)}",
+            lambda: f"service{random.randint(100, 999)}",
+            lambda: f"app{random.randint(1000, 9999)}",
+            lambda: f"db{random.randint(100, 999)}",
+            lambda: f"web{random.randint(100, 999)}",
+            lambda: f"api{random.randint(1000, 9999)}",
+            lambda: f"dev{random.randint(100, 999)}",
+            lambda: ''.join(random.choices(string.ascii_lowercase, k=random.randint(5, 8))) + str(random.randint(10, 999)),
+            lambda: ''.join(random.choices(string.ascii_lowercase, k=random.randint(6, 10))),
+        ]
+        return random.choice(username_patterns)()
     
     def generate_password(self, length: int = 32) -> str:
-        return f"hp_{secrets.token_hex(length // 2)}"
+        password_chars = string.ascii_letters + string.digits + "!@#$%^&*()_+-=[]{}|;:,.<>?"
+        return ''.join(secrets.choice(password_chars) for _ in range(length))
     
     def generate_pair(self, service_type: str) -> Dict[str, str]:
         return {
