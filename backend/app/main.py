@@ -2,11 +2,34 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import honeypots, credentials, events, auth, notifications
 from app.core.config import settings
+from contextlib import asynccontextmanager
+import subprocess
+import sys
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    try:
+        print("Running database migrations...")
+        result = subprocess.run(
+            ["alembic", "upgrade", "head"],
+            cwd="/app",
+            capture_output=True,
+            text=True
+        )
+        if result.returncode == 0:
+            print("Database migrations completed successfully")
+        else:
+            print(f"Migration warning: {result.stderr}", file=sys.stderr)
+    except Exception as e:
+        print(f"Migration error: {e}", file=sys.stderr)
+    
+    yield
 
 app = FastAPI(
     title="Honey Potter",
     description="Service for early attack detection",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 app.add_middleware(
