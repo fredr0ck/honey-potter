@@ -469,7 +469,7 @@ export default function Honeypots() {
                   </div>
                 </div>
               ) : (
-                <div className="honeypot-details">
+              <div className="honeypot-details">
                 <div className="honeypot-info">
                   <h3>{hp.name || `${hp.type.toUpperCase()} Honeypot`}</h3>
                   <p>Type: {hp.type.toUpperCase()}</p>
@@ -485,15 +485,15 @@ export default function Honeypots() {
                     <p>{hp.description}</p>
                   </div>
                 )}
-                {!selectMode && (
-                  <div className="honeypot-actions">
-                    {hp.status === 'running' ? (
+              {!selectMode && (
+                <div className="honeypot-actions">
+                  {hp.status === 'running' ? (
                       <>
-                        <button
-                          onClick={() => stopMutation.mutate(hp.id)}
-                          className="stop-btn"
+                    <button
+                      onClick={() => stopMutation.mutate(hp.id)}
+                      className="stop-btn"
                           disabled={!!loadingStates[hp.id]}
-                        >
+                    >
                           {loadingStates[hp.id] === 'stopping' ? 'Stopping...' : 'Stop'}
                         </button>
                         <button
@@ -503,28 +503,28 @@ export default function Honeypots() {
                           title="Restart honeypot"
                         >
                           {loadingStates[hp.id] === 'restarting' ? 'Restarting...' : '🔄 Restart'}
-                        </button>
-                      </>
-                    ) : (
-                      <button
-                        onClick={() => startMutation.mutate(hp.id)}
-                        className="start-btn"
-                        disabled={!!loadingStates[hp.id]}
-                      >
-                        {loadingStates[hp.id] === 'starting' ? 'Starting...' : 'Start'}
-                      </button>
-                    )}
-                    <button
-                      onClick={() => handleDelete(hp.id)}
-                      className="delete-btn"
-                      title="Delete honeypot"
-                      disabled={!!loadingStates[hp.id]}
-                    >
-                      🗑️ Delete
                     </button>
+                      </>
+                  ) : (
+                    <button
+                      onClick={() => startMutation.mutate(hp.id)}
+                      className="start-btn"
+                        disabled={!!loadingStates[hp.id]}
+                    >
+                        {loadingStates[hp.id] === 'starting' ? 'Starting...' : 'Start'}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleDelete(hp.id)}
+                    className="delete-btn"
+                    title="Delete honeypot"
+                      disabled={!!loadingStates[hp.id]}
+                  >
+                    🗑️ Delete
+                  </button>
                   </div>
                 )}
-              </div>
+                </div>
               )}
             </div>
           )) : <p>No honeypots yet. Create one to get started!</p>}
